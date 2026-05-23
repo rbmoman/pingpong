@@ -22,13 +22,18 @@ public:
 	float AIPaddleY;         // normalized center Y [0..1]
 
 	// Constants
-	static constexpr float PaddleH     = 0.18f;
-	static constexpr float PaddleW     = 0.015f;
-	static constexpr float BallRadius  = 0.012f;
-	static constexpr float PaddleX     = 0.04f;    // X center of each paddle from its edge
-	static constexpr float BallSpeed   = 0.45f;
-	static constexpr float PaddleSpeed = 0.70f;
-	static constexpr float AISpeed     = 0.42f;
+	static constexpr float PaddleH      = 0.18f;
+	static constexpr float PaddleW      = 0.015f;
+	static constexpr float BallRadius   = 0.012f;
+	static constexpr float PaddleX      = 0.04f;    // X center of each paddle from its edge
+	static constexpr float BallSpeed    = 0.45f;
+	static constexpr float MaxBallSpeed = 0.90f;    // speed cap after many rally hits
+	static constexpr float PaddleSpeed  = 0.70f;
+	static constexpr float AISpeed      = 0.42f;
+
+	// Rally state — read by HUD to show intensity (optional)
+	int32 RallyCount;
+	float CurrentBallSpeed;
 
 private:
 	void ResetBall();
