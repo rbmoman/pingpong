@@ -12,8 +12,10 @@ APingPongGameMode::APingPongGameMode()
 	PlayerControllerClass = APingPongPlayerController::StaticClass();
 	HUDClass = APingPongHUD::StaticClass();
 
-	PlayerPaddleY = 0.5f;
-	AIPaddleY     = 0.5f;
+	PlayerPaddleY    = 0.5f;
+	AIPaddleY        = 0.5f;
+	RallyCount       = 0;
+	CurrentBallSpeed = BallSpeed;
 }
 
 void APingPongGameMode::BeginPlay()
@@ -74,11 +76,13 @@ void APingPongGameMode::Tick(float DeltaTime)
 		float PaddleCX = PaddleX + PaddleW * 0.5f;
 		if (CheckPaddleCollision(PaddleCX, PlayerPaddleY))
 		{
+			++RallyCount;
+			CurrentBallSpeed = FMath::Min(BallSpeed * FMath::Pow(1.08f, RallyCount), MaxBallSpeed);
+
 			BallVel.X = FMath::Abs(BallVel.X);
 			float HitOffset = (BallPos.Y - PlayerPaddleY) / (PaddleH * 0.5f);
-			BallVel.Y = HitOffset * BallSpeed * 0.8f;
-			// Re-normalize speed
-			BallVel = BallVel.GetSafeNormal() * BallSpeed;
+			BallVel.Y = HitOffset * CurrentBallSpeed * 0.8f;
+			BallVel = BallVel.GetSafeNormal() * CurrentBallSpeed;
 		}
 	}
 	// Right (AI) paddle center
@@ -87,10 +91,13 @@ void APingPongGameMode::Tick(float DeltaTime)
 		float PaddleCX = 1.f - PaddleX - PaddleW * 0.5f;
 		if (CheckPaddleCollision(PaddleCX, AIPaddleY))
 		{
+			++RallyCount;
+			CurrentBallSpeed = FMath::Min(BallSpeed * FMath::Pow(1.08f, RallyCount), MaxBallSpeed);
+
 			BallVel.X = -FMath::Abs(BallVel.X);
 			float HitOffset = (BallPos.Y - AIPaddleY) / (PaddleH * 0.5f);
-			BallVel.Y = HitOffset * BallSpeed * 0.8f;
-			BallVel = BallVel.GetSafeNormal() * BallSpeed;
+			BallVel.Y = HitOffset * CurrentBallSpeed * 0.8f;
+			BallVel = BallVel.GetSafeNormal() * CurrentBallSpeed;
 		}
 	}
 
@@ -111,11 +118,13 @@ bool APingPongGameMode::CheckPaddleCollision(float PaddleCX, float PaddleCY)
 
 void APingPongGameMode::ResetBall()
 {
-	BallPos = FVector2D(0.5f, 0.5f);
+	BallPos          = FVector2D(0.5f, 0.5f);
+	RallyCount       = 0;
+	CurrentBallSpeed = BallSpeed;
 
 	// Pick a random quadrant angle: 30-60, 120-150, 210-240, 300-330 degrees
 	static const float Sectors[4] = { 30.f, 120.f, 210.f, 300.f };
-	float BaseDeg = Sectors[FMath::RandRange(0, 3)];
+	float BaseDeg  = Sectors[FMath::RandRange(0, 3)];
 	float AngleDeg = BaseDeg + FMath::FRandRange(0.f, 30.f);
 	float AngleRad = FMath::DegreesToRadians(AngleDeg);
 
